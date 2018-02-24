@@ -2,12 +2,32 @@ language: python
 python:
   - "3.6"
 
+stages:
+  - install
+  - test
+  - build
+  - name: deploy
+    if: branch = master
+
 cache:
   pip: true
 
-install:
-  - make install
-
-script:
-  - make lint
-  - make test
+jobs:
+  include:
+    - stage: install
+      script:
+        - make install
+    - stage: test
+      before_script:
+        - pip install -r requirements/test.txt
+      script:
+        - make lint
+        - make test
+    - stage: build
+      services:
+        - docker
+      script:
+        - make sdist
+        - docker build . -t crypto-investor
+    - stage: deploy
+      script: []

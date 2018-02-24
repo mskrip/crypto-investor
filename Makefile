@@ -14,3 +14,6 @@ lint:
 
 test:
 	python -m unittest
+
+sdist:
+	python setup.py sdist

@@ -1,6 +1,12 @@
 from setuptools import setup, find_packages
 
-requirements = []
+requirements = [
+    'dash',
+    'dash_core_components',
+    'dash_html_components',
+    'dash_renderer',
+    'pandas_datareader'
+]
 
 test_requirements = []
 
