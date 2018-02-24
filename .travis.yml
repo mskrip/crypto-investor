@@ -2,32 +2,43 @@ language: python
 python:
   - "3.6"
 
+env:
+  global:
+    - REGISTRY_HOST=repo.treescale.com
+    - IMAGE_NAME="${REGISTRY_HOST}/mskrip/crypto-investor"
+
 stages:
-  - install
   - test
-  - build
-  - name: deploy
-    if: branch = master
+  - untagged
+  - latest
 
 cache:
   pip: true
 
 jobs:
   include:
-    - stage: install
-      script:
-        - make install
     - stage: test
-      before_script:
+      install:
         - pip install -r requirements/test.txt
       script:
         - make lint
         - make test
-    - stage: build
+    - &untagged
+      stage: untagged
+      env:
+        - IMAGE_TAG: ${TRAVIS_JOB_ID}
       services:
         - docker
       script:
         - make sdist
-        - docker build . -t crypto-investor
-    - stage: deploy
-      script: []
+        - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+        - docker build --no-cache --pull -t "${IMAGE_NAME}:${IMAGE_TAG}" .
+        - docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+      except:
+        - master
+    - stage: latest
+      <<: *untagged
+      env:
+        - IMAGE_TAG: latest
+      only:
+        - master
