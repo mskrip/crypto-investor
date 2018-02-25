@@ -16,16 +16,18 @@
 - Možnosť predaja meny (10h)
 - Real-time meniace sa kurzy mien (resp. aktualizované v preddefinovaných časových úsekoch) (15h)
 - Možnosť zvoliť si náročnosť simulácie (5h)
+- Nastavnie Cl (10h)
 
-Počet hodín spolu: 70.
+Počet hodín spolu: 80.
 
 
 ## Použité technológie
 - Projekt bude implementovaný v jazyku Python
-- Vývojové prostredie: MS Code, PyCharm
+- Vývojové prostredie: VS Code, PyCharm
 - Použitie rôznych grafických knižníc na GUI a vizualizáciu grafov
 - Knižnice na získavanie dát o pohyboch kurzov na trhu
 - Testovanie správnej funkčnosti programu (unit testy)
+- GitHub: [Crypto-investor](https://github.com/mskrip/crypto-investor)
 
 ## Autori
 - Tomáš Sláma
