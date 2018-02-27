@@ -4,13 +4,16 @@ python:
 
 env:
   global:
-    - REGISTRY_HOST=repo.treescale.com
-    - IMAGE_NAME="${REGISTRY_HOST}/mskrip/crypto-investor"
+    - REGISTRY_URL=registry.heroku.com
+    - IMAGE_NAME="${REGISTRY_URL}/extreme-crypto-investor/web"
+    - HEROKU_APP=extreme-crypto-investor
 
 stages:
   - test
-  - untagged
-  - latest
+  - name: untagged
+    if: branch !=  master
+  - name: latest
+    if: branch = master
 
 cache:
   pip: true
@@ -19,26 +22,31 @@ jobs:
   include:
     - stage: test
       install:
-        - pip install -r requirements/test.txt
+        - make install
       script:
         - make lint
         - make test
-    - &untagged
-      stage: untagged
+    - stage: untagged
+      if: type = push
       env:
         - IMAGE_TAG: ${TRAVIS_JOB_ID}
       services:
         - docker
       script:
         - make sdist
-        - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
-        - docker build --no-cache --pull -t "${IMAGE_NAME}:${IMAGE_TAG}" .
-        - docker push "${IMAGE_NAME}:${IMAGE_TAG}"
-      except:
-        - master
+        - docker build --no-cache -t "${IMAGE_NAME}:${IMAGE_TAG}" .
     - stage: latest
-      <<: *untagged
+      if: NOT type = pull_request
       env:
         - IMAGE_TAG: latest
-      only:
+      services:
+        - docker
+      script:
+        - make sdist
+        - docker build --no-cache -t "${IMAGE_NAME}:${IMAGE_TAG}" .
+      after_script:
+        - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" ${REGISTRY_URL}
+        - docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+      branches:
+        only:
         - master

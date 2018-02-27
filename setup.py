@@ -5,7 +5,7 @@ requirements = [
     'dash_core_components',
     'dash_html_components',
     'dash_renderer',
-    'pandas_datareader'
+    'uwsgi'
 ]
 
 test_requirements = []
@@ -22,6 +22,7 @@ setup(
     description='Project for course Extreme programming',
     url='https://github.com/mskrip/crypto-investor',
     author='Tomas Slama, Samuel Wendl, Matej Vilk, Marian Skrip',
+    author_email='marian.skripp@gmail.com',
     classifiers=[
         'Programming Language :: Python :: 3.6'
     ],
@@ -31,6 +32,10 @@ setup(
     extras_require={
         'test': test_requirements
     },
-    include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
+    entry_points={
+        'console_scripts': [
+            'cryptoinvestor=cryptoinvestor.wsgi:wsgi'
+        ]
+    }
 )

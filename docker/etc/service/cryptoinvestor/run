@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec uwsgi --ini /etc/uwsgi/conf.d/cryptoinvestor.ini \
+           --pymodule-alias cryptoinvestor=cryptoinvestor
