@@ -1,0 +1,28 @@
+#!/bin/sh
+
+rm -f /run/nginx/nginx.conf
+mkdir -p /var/tmp/nginx
+
+cat > /etc/nginx/conf.d/cryptoinvestor.conf <<EOF
+upstream app_server {
+    server unix:/tmp/nginx.socket fail_timeout=0;
+}
+
+server {
+    location /public/ {
+        autoindex on;
+        alias /public/;
+    }
+
+    location / {
+        proxy_redirect off;
+        proxy_pass http://app_server;
+    }
+
+    listen ${PORT};
+    server_name _;
+    keepalive_timeout 5;
+}
+EOF
+
+exec nginx -g "daemon off;"
