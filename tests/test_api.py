@@ -1,6 +1,7 @@
 import datetime
 
 from cryptoinvestor.api import ApiBase
+from cryptoinvestor.api.coinapi import Api as CoinApi
 from cryptoinvestor.objects import Asset
 
 
@@ -64,3 +65,10 @@ class TestApiBase:
             assert True
             return
         assert True is False
+
+
+class TestCoinApi(TestApiBase):
+
+    def test_init(self):
+        api = CoinApi({'api_key': 'a'})
+        assert api.connect()
