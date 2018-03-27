@@ -2,9 +2,10 @@ from setuptools import setup, find_packages
 
 requirements = [
     'dash',
-    'dash_core_components',
     'dash_html_components',
     'dash_renderer',
+    'pyyaml',
+    'requests',
     'uwsgi'
 ]
 
@@ -35,7 +36,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'cryptoinvestor=cryptoinvestor.wsgi:wsgi'
+            'cryptoinvestor=cryptoinvestor.main:main'
         ]
     }
 )
