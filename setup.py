@@ -1,9 +1,7 @@
 from setuptools import setup, find_packages
 
 requirements = [
-    'dash',
-    'dash_html_components',
-    'dash_renderer',
+    'flask',
     'pyyaml',
     'requests',
     'uwsgi'

@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import flask
 import logging
 import sys
 
@@ -12,7 +13,7 @@ from cryptoinvestor.objects import AppBase
 
 logger = logging.getLogger(__name__)
 
-app = dash.Dash()
+application = flask.Flask(__name__)
 
 app.layout = html.Div([
     html.H1('App')
@@ -62,7 +63,8 @@ def main():
 
     App(file=args.config)
 
-    app.server.run()
+def main(args=None):
+    application.run()
 
 
 if __name__ == '__main__':
