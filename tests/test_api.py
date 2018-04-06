@@ -1,74 +1,78 @@
 import datetime
 
-from cryptoinvestor.api import ApiBase
 from cryptoinvestor.api.coinapi import Api as CoinApi
-from cryptoinvestor.objects import Asset
 
 
-class TestApiBase:
-    def test_init(self):
-        assert ApiBase({})
+TEST_COINAPI_KEY = '61A647BB-A3D1-4A9C-A736-5FD660914697'
 
-    def test_connect(self):
+
+class TestCoinApi:
+    test_date = datetime.datetime(2015, 12, 5, 20, 30)
+    test_btc_to_usd = 387.62
+
+    def test_init_f(self):
         try:
-            api = ApiBase({})
-            api.connect()
-        except NotImplementedError:
+            CoinApi({'api_key': ''})
+        except CoinApi.Error:
             assert True
             return
-        assert True is False
+
+        assert False
+
+    def test_init(self):
+        api = CoinApi({'api_key': TEST_COINAPI_KEY})
+        assert api.connect()
 
     def test_get(self):
-        try:
-            api = ApiBase({})
-            api.get()
-        except NotImplementedError:
-            assert True
-            return
-        assert True is False
+        api = CoinApi({'api_key': TEST_COINAPI_KEY})
+        assets = api.get()
+
+        assert assets
 
     def test_load(self):
-        try:
-            now = datetime.datetime.now()
-            api = ApiBase({})
-            acc = Asset('ACC', 'Awesome crypto currency', True)
-            api.load(asset=acc, base='USD', time=now)
-        except NotImplementedError:
-            assert True
-            return
-        assert True is False
+        api = CoinApi({'api_key': TEST_COINAPI_KEY})
+        all_assets = api.get()
+
+        assets = {}
+        for asset in all_assets:
+            assets[asset.id] = asset
+
+        btc = assets.get('BTC')
+        assert not btc.is_loaded()
+
+        btc = api.load(asset=btc, base='USD', time=self.test_date)
+
+        assert btc.is_loaded()
+
+        btc_to_usd = btc.rates.get('USD')
+        assert btc_to_usd
+
+        assert round(btc_to_usd.get('rate'), 2) == self.test_btc_to_usd
 
     def test_update(self):
-        try:
-            api = ApiBase({})
-            api.update()
-        except NotImplementedError:
-            assert True
-            return
-        assert True is False
+        api = CoinApi({'api_key': TEST_COINAPI_KEY})
+        all_assets = api.get()
 
-    def test_clear(self):
-        try:
-            api = ApiBase({})
-            acc = Asset('ACC', 'Awesome crypto currency', True)
-            api.clear(asset=acc)
-        except NotImplementedError:
-            assert True
-            return
-        assert True is False
+        assets = {}
+        for asset in all_assets:
+            assets[asset.id] = asset
 
-    def test_dump(self):
-        try:
-            api = ApiBase({})
-            api.dump()
-        except NotImplementedError:
-            assert True
-            return
-        assert True is False
+        btc = assets.get('BTC')
+        assert not btc.is_loaded()
 
+        btc = api.load(asset=btc, base='USD', time=self.test_date)
 
-class TestCoinApi(TestApiBase):
+        assert btc.is_loaded()
 
-    def test_init(self):
-        api = CoinApi({'api_key': 'a'})
-        assert api.connect()
+        btc_to_usd_then = btc.rates.get('USD')
+        assert btc_to_usd_then
+
+        updated = api.update(assets)
+        btc_now = updated.get('BTC')
+        assert btc_now
+
+        btc_to_usd_now = btc_now.rates.get('USD')
+        assert btc_to_usd_now
+
+        assert btc_to_usd_now.get('rate') != btc_to_usd_then.get('rate')
+        assert btc_to_usd_now.get('time') > btc_to_usd_then.get('time')

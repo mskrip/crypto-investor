@@ -74,7 +74,6 @@ class Api(ApiBase):
         url = urljoin(self.base, f'exchangerate/{asset.id}/{base}')
 
         r = self.sess.get(url, params=payload)
-        print(r.url)
 
         if not r.ok:
             self.error = f'Error loading data from {url} request: {r.content}'
