@@ -13,7 +13,7 @@ lint:
 	flake8
 
 test:
-	python -m unittest
+	python -m pytest
 
 sdist:
 	python setup.py sdist

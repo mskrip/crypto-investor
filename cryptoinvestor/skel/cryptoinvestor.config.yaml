@@ -1,0 +1,4 @@
+api:
+  coinapi:
+    base_url: 'https://rest.coinapi.io/v1/'
+    api_key: ''

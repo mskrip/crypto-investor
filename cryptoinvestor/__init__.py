@@ -1,3 +1,1 @@
-from cryptoinvestor.main import app
-
-application = app.server
+from cryptoinvestor.main import application  # noqa F401
