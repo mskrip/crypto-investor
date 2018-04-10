@@ -36,5 +36,6 @@ setup(
         'console_scripts': [
             'cryptoinvestor=cryptoinvestor.main:main'
         ]
-    }
+    },
+    include_package_data=True
 )
