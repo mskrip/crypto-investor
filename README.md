@@ -2,9 +2,9 @@
 
 Project for course Extreme programming
 
-# Installation and usage
+## Installation and usage
 
-## Local usage (not recommended)
+### Local usage (not recommended)
 
 First create virtual environment with
 
@@ -36,7 +36,7 @@ $ python cryptoinvestor/wsgi.py
 
 Now you can access the site on [http://localhost:5000](http://localhost:5000)
 
-## Docker usage (recommended)
+### Docker usage (recommended)
 
 Create sdist tarball
 
@@ -73,7 +73,11 @@ $ docker run -p 5000:5000 \
 
 Now you can access the site on [http://localhost:5000](http://localhost:5000)
 
-# Authors
+## Configuration
+
+Configuration documentation in [docs/configuration.md](docs/configuration.md)
+
+## Authors
 
 - Tomas Slama
 - Matej Vilk
