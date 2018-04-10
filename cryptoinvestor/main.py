@@ -42,6 +42,17 @@ class App(metaclass=Singleton):
 
         self.api = CoinApi(self.config.get('api', {}).get('coinapi'))
 
+        self.local_currency = self.config.get('local_currency', '').upper()
+        if not self.local_currency:
+            self.local_currency = os.environ.get('LOCAL_CURRENCY')
+
+        if not self.local_currency:
+            logger.warn(
+                'Local currency not found. Defaulting to EUR. If you want to change that use env '
+                'variable \'LOCAL_CURRENCY\''
+            )
+            self.local_currency = 'EUR'
+
         self.run()
 
     def add_asset(self, name: str, asset: Asset):

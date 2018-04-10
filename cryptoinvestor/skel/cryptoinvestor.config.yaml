@@ -1,3 +1,4 @@
+local_currency: ''
 api:
   coinapi:
     base_url: 'https://rest.coinapi.io/v1/'
