@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% include "layout.html" %}
+
+{% block title %}Assets{% endblock %}
+
+{% block body %}
+<body>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Asset</th>
+            <th>Rate to {{ local_currency }}</th>
+        </tr>
+        {% for asset in assets %}
+        <tr>
+            <td>{{asset.id}}</td>
+            <td>{{asset.name}}</td>
+            <td>{{asset.rate}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+{% endblock %}

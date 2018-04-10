@@ -2,16 +2,21 @@ import argparse
 import datetime
 import flask
 import logging
+import os
 import sys
 import yaml
 
 
 from cryptoinvestor.api.coinapi import Api as CoinApi
 from cryptoinvestor.objects import Asset, Singleton
+from cryptoinvestor import views
+from cryptoinvestor.urls import setup_urls
 
 logger = logging.getLogger(__name__)
 
 application = flask.Flask(__name__)
+
+setup_urls(application)
 
 
 def setup_argparse():
@@ -34,7 +39,7 @@ class App(metaclass=Singleton):
         """
 
         self.assets = {}
-        self.user = None
+        self.user = {'name': 'tester'}  # TODO: instance of user object
         self.config = {}
 
         if config_file:
@@ -74,7 +79,15 @@ class App(metaclass=Singleton):
         for asset in assets:
             self.add_asset(asset.id, asset)
 
-        self.api.load(asset=self.assets.get('BTC'), base='EUR', time=datetime.datetime.utcnow())
+        self.api.load(
+            asset=self.assets.get('BTC'), base=self.local_currency, time=datetime.datetime.utcnow()
+        )
+        self.api.load(
+            asset=self.assets.get('USD'), base=self.local_currency, time=datetime.datetime.utcnow()
+        )
+        self.api.load(
+            asset=self.assets.get('IOTA'), base=self.local_currency, time=datetime.datetime.utcnow()
+        )
 
         if self.api.error:
             logger.error(self.api.error)
@@ -86,26 +99,13 @@ class App(metaclass=Singleton):
         self.assets.update(updated)
 
 
-parser = setup_argparse()
-args = parser.parse_args()
-app = None
-
-
-@application.route('/')
-def index():
-    global app
-
-    if app is None:
-        app = App(config_file=args.config)
-
-    app.update_assets()
-
-    return str(app.assets.get('BTC').rates)
-
-
 def main(args=None):
+    views.BaseView.app = App(config_file=args.config)
     application.run()
 
 
 if __name__ == '__main__':
+    parser = setup_argparse()
+    args = parser.parse_args()
+
     sys.exit(main(args))

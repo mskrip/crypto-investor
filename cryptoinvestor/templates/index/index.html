@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% include "layout.html" %}
+
+{% block title %}Index{% endblock %}
+
+{% block body %}
+<h1>Hello {{ user['name'] }}</h1>
+<p>
+    Welcome to {{ appname }}
+</p>
+{% endblock %}
