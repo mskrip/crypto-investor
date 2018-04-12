@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-{% include "layout.html" %}
+{% set active_page ='assets_listview' -%}
 
 {% block title %}Assets{% endblock %}
 
-{% block body %}
-<body>
+{% block main %}
     <table>
         <tr>
             <th>ID</th>
@@ -13,11 +12,21 @@
         </tr>
         {% for asset in assets %}
         <tr>
-            <td>{{asset.id}}</td>
+            <a href="/{{asset.id}}">
+                <td>{{asset.id}}</td>
+            </a>
             <td>{{asset.name}}</td>
             <td>{{asset.rate}}</td>
         </tr>
         {% endfor %}
     </table>
-</body>
+
+    {% if graphJSON %}
+        {% for id in ids %}
+            <h3>{{id}}</h3>
+            <div id="{{id}}"></div>
+        {% endfor %}
+
+        {% include "assets/graph.html" %}
+    {% endif %}
 {% endblock %}

@@ -1,0 +1,15 @@
+<footer>
+    <!-- Plotly.js -->
+    <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+
+    <script type="text/javascript">
+        var graphs = {{ graphJSON | safe }};
+        console.log(graphs);
+        var ids = {{ ids | safe }};
+        for(var i in graphs) {
+            Plotly.plot(ids[i], // the ID of the div, created above
+                        graphs[i].data,
+                        graphs[i].layout || {});
+        }
+    </script>
+</footer>

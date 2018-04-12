@@ -4,10 +4,18 @@
 ] -%}
 {% set active_page = active_page|default('index') -%}
 
-<ul id="navigation">
+{% block nav %}
+<ul id="slide-out" class="sidenav sidenav-fixed">
     {% for href, id, caption in navigation_bar %}
     <li{% if id == active_page %} class="active" {% endif %}>
         <a href="{{ href|e }}">{{ caption|e }}</a>
     </li>
     {% endfor %}
 </ul>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+      $('.sidenav').sidenav();
+    });
+</script>
+{% endblock %}

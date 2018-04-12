@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% include "layout.html" %}
+{% set active_page = 'index' -%}
+
 
 {% block title %}Index{% endblock %}
 
-{% block body %}
+{% block main %}
 <h1>Hello {{ user['name'] }}</h1>
 <p>
     Welcome to {{ appname }}

@@ -70,24 +70,31 @@ class App(metaclass=Singleton):
         self.assets[name] = asset
 
     def run(self):
+        now = datetime.datetime.utcnow()
         # Just example code, this will change
-        assets = self.api.get()
+        # assets = self.api.get()
 
-        if not assets and self.api.error:
-            logger.error(self.api.error)
+        # if not assets and self.api.error:
+        #     logger.error(self.api.error)
 
-        for asset in assets:
-            self.add_asset(asset.id, asset)
+        # for asset in assets:
+        #     self.add_asset(asset.id, asset)
 
-        self.api.load(
-            asset=self.assets.get('BTC'), base=self.local_currency, time=datetime.datetime.utcnow()
-        )
-        self.api.load(
-            asset=self.assets.get('USD'), base=self.local_currency, time=datetime.datetime.utcnow()
-        )
-        self.api.load(
-            asset=self.assets.get('IOTA'), base=self.local_currency, time=datetime.datetime.utcnow()
-        )
+        # self.api.load(
+        #     asset=self.assets.get('BTC'), base=self.local_currency, time=now
+        # )
+        # self.api.load(
+        #     asset=self.assets.get('USD'), base=self.local_currency, time=now
+        # )
+
+        btc = Asset('BTC', 'Bitcoin', True)
+
+        btc.set_rate('EUR', 1000, now)
+        self.add_asset(btc.id, btc)
+
+        usd = Asset('USD', 'US Dollar', False)
+        usd.set_rate('EUR', 0.86, now)
+        self.add_asset(usd.id, usd)
 
         if self.api.error:
             logger.error(self.api.error)

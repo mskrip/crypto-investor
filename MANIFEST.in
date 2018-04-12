@@ -1,1 +1,2 @@
 recursive-include cryptoinvestor/templates *
+recursive-include cryptoinvestor/static *
