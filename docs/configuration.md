@@ -8,6 +8,7 @@ There are two ways to configure behaviour of application:
 ## Configuration file
 
 Templates of config file is in `cryptoinvestor/skel/cryptoinvestor.config.yaml`.
+Copy the template somewhere to you local PC and edit the copy.
 
 | Setting        | Description                                            |
 | -------------- | ------------------------------------------------------ |
