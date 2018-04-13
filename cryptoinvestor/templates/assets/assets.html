@@ -3,30 +3,29 @@
 
 {% block title %}Assets{% endblock %}
 
-{% block main %}
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Asset</th>
-            <th>Rate to {{ local_currency }}</th>
-        </tr>
-        {% for asset in assets %}
-        <tr>
-            <a href="/{{asset.id}}">
-                <td>{{asset.id}}</td>
-            </a>
-            <td>{{asset.name}}</td>
-            <td>{{asset.rate}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+{% block body %}
+    <main>
+        <table class="responsive-table highlight">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Rate to {{ local_currency }}</th>
+                </tr>
+            </thead>
+            <tbody id="assets-table-body">
+                {% for asset in assets %}
+                <tr onclick="window.location='#{{ asset.id }}'; loadGraph();">
+                    <td>{{ asset.id }}</td>
+                    <td>{{ asset.name }}</td>
+                    <td>{{ asset.rate }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
 
     {% if graphJSON %}
-        {% for id in ids %}
-            <h3>{{id}}</h3>
-            <div id="{{id}}"></div>
-        {% endfor %}
-
         {% include "assets/graph.html" %}
     {% endif %}
 {% endblock %}

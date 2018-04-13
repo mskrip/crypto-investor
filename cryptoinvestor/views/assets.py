@@ -20,28 +20,37 @@ class AssetsListView(BaseView):
                     'rate': asset.rates.get(self.app.local_currency, {}).get('rate', 'N/A'),
                 })
 
-        graph = [
-          {
-            'data': [
-                {
-                    'x': [1, 2, 3],
-                    'y': [10, 20, 30],
-                    'type': 'scatter'
-                },
-            ],
-            'layout': {
-                'title': 'first graph'
+        graphs = {
+            'BTC': {
+                'data': [
+                    {
+                        'x': [1, 2, 3],
+                        'y': [10, 20, 30],
+                        'type': 'scatter'
+                    },
+                ],
+                'layout': {
+                    'title': 'Bitcoint'
+                }
+            },
+            'USD': {
+                'data': [
+                    {
+                        'x': [1, 2, 3],
+                        'y': [18, 2, 22],
+                        'type': 'scatter'
+                    },
+                ],
+                'layout': {
+                    'title': 'US Dollar'
+                }
             }
-          }
-        ]
+        }
 
-        ids = ['graph-{}'.format(i) for i in range(len(graph))]
-
-        graph_json = json.dumps(graph, cls=plotly.utils.PlotlyJSONEncoder)
+        graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 
         return {
             'assets': assets,
             'local_currency': self.app.local_currency,
-            'ids': ids,
-            'graphJSON': graph_json
+            'graphJSON': graphs_json
         }

@@ -2,8 +2,8 @@
 
 There are two ways to configure behaviour of application:
 
- - [Configuration file](#configuration_file)
- - [Environment variables](#environment_variables)
+- [Configuration file](#configuration_file)
+- [Environment variables](#environment_variables)
 
 ## Configuration file
 
@@ -21,7 +21,6 @@ Copy the template somewhere to you local PC and edit the copy.
 | -------- | ---------------------------------------------------------------------------- |
 | base_url | Base url of CoinApi REST service. Defaults to `https://rest.coinapi.io/v1/`. |
 | api_key  | Api key provided by CoinApi.                                                 |
-
 
 ## Environment variables
 

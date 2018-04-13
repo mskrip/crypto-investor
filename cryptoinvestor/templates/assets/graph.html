@@ -1,15 +1,28 @@
 <footer>
+    <div id="graph-container" class="graph"></div>
+
     <!-- Plotly.js -->
-    <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <script type="text/javascript">
-        var graphs = {{ graphJSON | safe }};
-        console.log(graphs);
-        var ids = {{ ids | safe }};
-        for(var i in graphs) {
-            Plotly.plot(ids[i], // the ID of the div, created above
-                        graphs[i].data,
-                        graphs[i].layout || {});
+        function loadGraph() {
+            Plotly.purge("graph-container");
+            var asset = window.location.hash.substr(1);
+
+            if (!asset) {
+                asset = document.getElementById("assets-table-body")
+                                .firstElementChild
+                                .firstElementChild
+                                .textContent;
+            }
+
+            var graphs = {{ graphJSON | safe }};
+
+            Plotly.plot("graph-container", // the ID of the div, created above
+                        graphs[asset].data,
+                        graphs[asset].layout || {});
         }
+
+        loadGraph();
     </script>
 </footer>
