@@ -2,6 +2,7 @@ from setuptools import setup, find_packages
 
 requirements = [
     'flask',
+    'plotly',
     'pyyaml',
     'requests',
     'uwsgi'
@@ -36,5 +37,6 @@ setup(
         'console_scripts': [
             'cryptoinvestor=cryptoinvestor.main:main'
         ]
-    }
+    },
+    include_package_data=True
 )

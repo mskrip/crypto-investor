@@ -2,16 +2,21 @@ import argparse
 import datetime
 import flask
 import logging
+import os
 import sys
 import yaml
 
 
 from cryptoinvestor.api.coinapi import Api as CoinApi
 from cryptoinvestor.objects import Asset, Singleton
+from cryptoinvestor import views
+from cryptoinvestor.urls import setup_urls
 
 logger = logging.getLogger(__name__)
 
 application = flask.Flask(__name__)
+
+setup_urls(application)
 
 
 def setup_argparse():
@@ -34,13 +39,24 @@ class App(metaclass=Singleton):
         """
 
         self.assets = {}
-        self.user = None
+        self.user = {'name': 'tester'}  # TODO: instance of user object
         self.config = {}
 
         if config_file:
             self.config = yaml.load(config_file)
 
         self.api = CoinApi(self.config.get('api', {}).get('coinapi'))
+
+        self.local_currency = self.config.get('local_currency', '').upper()
+        if not self.local_currency:
+            self.local_currency = os.environ.get('LOCAL_CURRENCY')
+
+        if not self.local_currency:
+            logger.warn(
+                'Local currency not found. Defaulting to EUR. If you want to change that use env '
+                'variable \'LOCAL_CURRENCY\''
+            )
+            self.local_currency = 'EUR'
 
         self.run()
 
@@ -54,16 +70,31 @@ class App(metaclass=Singleton):
         self.assets[name] = asset
 
     def run(self):
+        now = datetime.datetime.utcnow()
         # Just example code, this will change
-        assets = self.api.get()
+        # assets = self.api.get()
 
-        if not assets and self.api.error:
-            logger.error(self.api.error)
+        # if not assets and self.api.error:
+        #     logger.error(self.api.error)
 
-        for asset in assets:
-            self.add_asset(asset.id, asset)
+        # for asset in assets:
+        #     self.add_asset(asset.id, asset)
 
-        self.api.load(asset=self.assets.get('BTC'), base='EUR', time=datetime.datetime.utcnow())
+        # self.api.load(
+        #     asset=self.assets.get('BTC'), base=self.local_currency, time=now
+        # )
+        # self.api.load(
+        #     asset=self.assets.get('USD'), base=self.local_currency, time=now
+        # )
+
+        btc = Asset('BTC', 'Bitcoin', True)
+
+        btc.set_rate('EUR', 1000, now)
+        self.add_asset(btc.id, btc)
+
+        usd = Asset('USD', 'US Dollar', False)
+        usd.set_rate('EUR', 0.86, now)
+        self.add_asset(usd.id, usd)
 
         if self.api.error:
             logger.error(self.api.error)
@@ -75,26 +106,13 @@ class App(metaclass=Singleton):
         self.assets.update(updated)
 
 
-parser = setup_argparse()
-args = parser.parse_args()
-app = None
-
-
-@application.route('/')
-def index():
-    global app
-
-    if app is None:
-        app = App(config_file=args.config)
-
-    app.update_assets()
-
-    return str(app.assets.get('BTC').rates)
-
-
 def main(args=None):
+    views.BaseView.app = App(config_file=args.config)
     application.run()
 
 
 if __name__ == '__main__':
+    parser = setup_argparse()
+    args = parser.parse_args()
+
     sys.exit(main(args))

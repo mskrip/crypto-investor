@@ -1,0 +1,16 @@
+
+header, main, footer {
+    padding-left: 350px;
+    padding-right: 50px;
+}
+
+div.graph {
+    max-width: 800px;
+}
+
+@media only screen and (max-width : 992px) {
+    header, main, footer, div.graph {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
