@@ -1,7 +1,7 @@
 import datetime
 import requests
 
-from cryptoinvestor.objects import Asset
+from cryptoinvestor.models.asset import Asset
 
 
 class ApiBase:

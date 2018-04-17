@@ -29,7 +29,7 @@ jobs:
     - stage: untagged
       if: type = push
       env:
-        - IMAGE_TAG: ${TRAVIS_JOB_ID}
+        - IMAGE_TAG=${TRAVIS_JOB_ID}
       services:
         - docker
       script:
@@ -38,7 +38,7 @@ jobs:
     - stage: latest
       if: NOT type = pull_request
       env:
-        - IMAGE_TAG: latest
+        - IMAGE_TAG=latest
       services:
         - docker
       script:

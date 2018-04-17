@@ -13,7 +13,7 @@ RUN set -x \
     && apk add --no-cache \
         nginx \
         runit \
-    && pip install --upgrade setuptools \
+    && pip install --upgrade pip setuptools \
     && pip install crypto-investor-${CRYPTO_INVESTOR_VERSION}.tar.gz \
     && rm crypto-investor-${CRYPTO_INVESTOR_VERSION}.tar.gz \
     # Setup nginx

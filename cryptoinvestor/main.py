@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import flask
+import json
 import logging
 import os
 import sys
@@ -8,15 +9,25 @@ import yaml
 
 
 from cryptoinvestor.api.coinapi import Api as CoinApi
-from cryptoinvestor.objects import Asset, Singleton
-from cryptoinvestor import views
+# from cryptoinvestor.api.coinmarketcap import Api as CoinMarketCapApi
+from cryptoinvestor.api.firebase import Api as FirebaseApi
+from cryptoinvestor.models.asset import Asset
+from cryptoinvestor import views, Singleton
 from cryptoinvestor.urls import setup_urls
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(
+    handlers=[logging.StreamHandler(sys.stdout)],
+    level=logging.DEBUG,
+    format='[%(asctime)s] [%(levelname)s] %(message)s'
+)
+
 application = flask.Flask(__name__)
 
 setup_urls(application)
+
+DEFAULT_DUMP_PATH = '/srv/cryptoinvestor/data.dump.json'
 
 
 def setup_argparse():
@@ -41,11 +52,17 @@ class App(metaclass=Singleton):
         self.assets = {}
         self.user = {'name': 'tester'}  # TODO: instance of user object
         self.config = {}
+        self.firebase = None
 
-        if config_file:
-            self.config = yaml.load(config_file)
+        try:
+            if config_file:
+                self.config = yaml.load(config_file)
 
-        self.api = CoinApi(self.config.get('api', {}).get('coinapi'))
+            self.api = CoinApi(self.config.get('api', {}).get('coinapi'))
+            # self.api = CoinMarketCapApi(self.config.get('api', {}).get('coinmarketcap'))
+        except Exception as error:
+            logger.error(error)
+            exit()
 
         self.local_currency = self.config.get('local_currency', '').upper()
         if not self.local_currency:
@@ -53,10 +70,27 @@ class App(metaclass=Singleton):
 
         if not self.local_currency:
             logger.warn(
-                'Local currency not found. Defaulting to EUR. If you want to change that use env '
-                'variable \'LOCAL_CURRENCY\''
+                'Local currency not found. Defaulting to EUR. If you want to change that use'
+                'env variable \'LOCAL_CURRENCY\''
             )
             self.local_currency = 'EUR'
+
+        self.dump_path = self.config.get('dump_path')
+
+        if self.dump_path is None:
+            self.dump_path = os.environ.get('DUMP_PATH')
+
+        if self.dump_path is None:
+            logger.info(
+                'Dump path not found, defaulting to  `%s`. If you want to change that use env'
+                'variable \'DUMP_PATH\'', DEFAULT_DUMP_PATH
+            )
+            self.dump_path = DEFAULT_DUMP_PATH
+
+        try:
+            self.firebase = FirebaseApi(self.config.get('api', {}).get('firebase'))
+        except FirebaseApi.Error as error:
+            logger.warn('Firebase was not set up and is not being used. %s', error)
 
         self.run()
 
@@ -69,40 +103,74 @@ class App(metaclass=Singleton):
         """
         self.assets[name] = asset
 
+    def load(self) -> {str: Asset}:
+        load = {}
+
+        if self.firebase:
+            load.update(self.firebase.load())
+
+        if os.path.exists(self.dump_path):
+            with open(self.dump_path, 'r') as fd:
+                try:
+                    load.update(json.load(fd))
+                except json.decoder.JSONDecodeError:
+                    pass
+
+        return load
+
+    def dump(self, asset: Asset):
+        load = self.load()
+
+        if os.path.exists(self.dump_path):
+            dump_asset = load.get(asset.symbol, {})
+
+            for base in asset.rates.keys():
+                rate = dump_asset.get(base, [])
+                rate.append(asset.rates.get(base))
+
+                dump_asset[base] = rate
+
+            load[asset.symbol] = dump_asset
+
+        else:
+            load.update({
+                asset.symbol: asset.rates
+            })
+
+        with open(self.dump_path, 'w') as fd:
+            json.dump(load, fd)
+
+        if self.firebase:
+            self.firebase.save(load)
+
     def run(self):
         now = datetime.datetime.utcnow()
         # Just example code, this will change
-        # assets = self.api.get()
+        assets = self.api.get()
 
-        # if not assets and self.api.error:
-        #     logger.error(self.api.error)
-
-        # for asset in assets:
-        #     self.add_asset(asset.id, asset)
-
-        # self.api.load(
-        #     asset=self.assets.get('BTC'), base=self.local_currency, time=now
-        # )
-        # self.api.load(
-        #     asset=self.assets.get('USD'), base=self.local_currency, time=now
-        # )
-
-        btc = Asset('BTC', 'Bitcoin', True)
-
-        btc.set_rate('EUR', 1000, now)
-        self.add_asset(btc.id, btc)
-
-        usd = Asset('USD', 'US Dollar', False)
-        usd.set_rate('EUR', 0.86, now)
-        self.add_asset(usd.id, usd)
-
-        if self.api.error:
+        if not assets and self.api.error:
             logger.error(self.api.error)
 
-        print(self.assets.get('BTC').rates)
+        for asset in assets:
+            self.add_asset(asset.symbol, asset)
+
+        base = self.local_currency
+
+        btc = self.assets.get('BTC')
+        # eth = self.assets.get('ETH')
+
+        self.api.load(asset=btc, base=base, time=now)
+        self.dump(btc)
+
+        # self.api.load(asset=eth, base=base, time=now)
+        # self.dump(eth)
 
     def update_assets(self):
         updated = self.api.update(self.assets)
+
+        for key in updated.keys():
+            self.dump(self.assets.get(key))
+
         self.assets.update(updated)
 
 

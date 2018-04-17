@@ -5,7 +5,7 @@ import logging
 from urllib.parse import urljoin
 
 from cryptoinvestor.api import ApiBase
-from cryptoinvestor.objects import Asset
+from cryptoinvestor.models.asset import Asset
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,7 @@ class Api(ApiBase):
         for asset in data:
             assets.append(Asset(
                 id=asset.get('asset_id'), name=asset.get('name'),
+                symbol=asset.get('asset_id'),
                 is_crypto=asset.get('type_is_crypto')
             ))
 
@@ -93,11 +94,19 @@ class Api(ApiBase):
     def update(self, assets: {str: Asset}) -> {str: Asset}:
         updated = {}
 
-        for asset in assets.values():
-            if asset.is_loaded():
-                for base in asset.rates.keys():
-                    self.load(asset=asset, base=base, time=datetime.datetime.utcnow())
+        now = datetime.datetime.utcnow()
 
-                updated[asset.id] = asset
+        for asset in assets.values():
+            is_new = False
+            if asset.is_loaded():
+                new_asset = Asset(asset.id, asset.name, asset.symbol, asset.is_crypto)
+                for base in asset.rates.keys():
+                    self.load(asset=new_asset, base=base, time=now)
+
+                    if asset.rates[base]['time'] < new_asset.rates[base]['time']:
+                        is_new = True
+
+                if is_new:
+                    updated[asset.symbol] = new_asset
 
         return updated
