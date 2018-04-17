@@ -54,10 +54,15 @@ class App(metaclass=Singleton):
         self.config = {}
         self.firebase = None
 
-        if config_file:
-            self.config = yaml.load(config_file)
+        try:
+            if config_file:
+                self.config = yaml.load(config_file)
 
-        self.api = CoinApi(self.config.get('api', {}).get('coinapi'))
+            self.api = CoinApi(self.config.get('api', {}).get('coinapi'))
+            # self.api = CoinMarketCapApi(self.config.get('api', {}).get('coinmarketcap'))
+        except Exception as error:
+            logger.error(error)
+            exit()
 
         self.local_currency = self.config.get('local_currency', '').upper()
         if not self.local_currency:
@@ -141,34 +146,24 @@ class App(metaclass=Singleton):
     def run(self):
         now = datetime.datetime.utcnow()
         # Just example code, this will change
-        # assets = self.api.get()
+        assets = self.api.get()
 
-        # if not assets and self.api.error:
-        #     logger.error(self.api.error)
-
-        # for asset in assets:
-        #     self.add_asset(asset.id, asset)
-
-        # self.api.load(
-        #     asset=self.assets.get('BTC'), base=self.local_currency, time=now
-        # )
-        # self.api.load(
-        #     asset=self.assets.get('USD'), base=self.local_currency, time=now
-        # )
-
-        btc = Asset('BTC', 'Bitcoin', True)
-
-        btc.set_rate('EUR', 1000, now)
-        self.add_asset(btc.id, btc)
-
-        usd = Asset('USD', 'US Dollar', False)
-        usd.set_rate('EUR', 0.86, now)
-        self.add_asset(usd.id, usd)
-
-        if self.api.error:
+        if not assets and self.api.error:
             logger.error(self.api.error)
 
-        print(self.assets.get('BTC').rates)
+        for asset in assets:
+            self.add_asset(asset.symbol, asset)
+
+        base = self.local_currency
+
+        btc = self.assets.get('BTC')
+        # eth = self.assets.get('ETH')
+
+        self.api.load(asset=btc, base=base, time=now)
+        self.dump(btc)
+
+        # self.api.load(asset=eth, base=base, time=now)
+        # self.dump(eth)
 
     def update_assets(self):
         updated = self.api.update(self.assets)
