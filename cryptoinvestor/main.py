@@ -23,6 +23,7 @@ setup_urls(application)
 
 DEFAULT_DUMP_PATH = '/srv/cryptoinvestor/data.dump.json'
 
+
 def setup_argparse():
     parser = argparse.ArgumentParser('CryptoInvestor app for investment simulations')
 
@@ -45,6 +46,7 @@ class App(metaclass=Singleton):
         self.assets = {}
         self.user = {'name': 'tester'}  # TODO: instance of user object
         self.config = {}
+        self.firebase = None
 
         if config_file:
             self.config = yaml.load(config_file)
@@ -57,10 +59,27 @@ class App(metaclass=Singleton):
 
         if not self.local_currency:
             logger.warn(
-                'Local currency not found. Defaulting to EUR. If you want to change that use env '
-                'variable \'LOCAL_CURRENCY\''
+                'Local currency not found. Defaulting to EUR. If you want to change that use'
+                'env variable \'LOCAL_CURRENCY\''
             )
             self.local_currency = 'EUR'
+
+        self.dump_path = self.config.get('dump_path')
+
+        if self.dump_path is None:
+            self.dump_path = os.environ.get('DUMP_PATH')
+
+        if self.dump_path is None:
+            logger.info(
+                'Dump path not found, defaulting to  `%s`. If you want to change that use env'
+                'variable \'DUMP_PATH\'', DEFAULT_DUMP_PATH
+            )
+            self.dump_path = DEFAULT_DUMP_PATH
+
+        try:
+            self.firebase = FirebaseApi(self.config.get('api', {}).get('firebase'))
+        except FirebaseApi.Error as error:
+            logger.warn('Firebase was not set up and is not being used. %s', error)
 
         self.run()
 
@@ -72,6 +91,46 @@ class App(metaclass=Singleton):
             asset {Asset} -- [description]
         """
         self.assets[name] = asset
+
+    def load(self) -> {str: Asset}:
+        load = {}
+
+        if self.firebase:
+            load.update(self.firebase.load())
+
+        if os.path.exists(self.dump_path):
+            with open(self.dump_path, 'r') as fd:
+                try:
+                    load.update(json.load(fd))
+                except json.decoder.JSONDecodeError:
+                    pass
+
+        return load
+
+    def dump(self, asset: Asset):
+        load = self.load()
+
+        if os.path.exists(self.dump_path):
+            dump_asset = load.get(asset.symbol, {})
+
+            for base in asset.rates.keys():
+                rate = dump_asset.get(base, [])
+                rate.append(asset.rates.get(base))
+
+                dump_asset[base] = rate
+
+            load[asset.symbol] = dump_asset
+
+        else:
+            load.update({
+                asset.symbol: asset.rates
+            })
+
+        with open(self.dump_path, 'w') as fd:
+            json.dump(load, fd)
+
+        if self.firebase:
+            self.firebase.save(load)
 
     def run(self):
         now = datetime.datetime.utcnow()
@@ -107,6 +166,10 @@ class App(metaclass=Singleton):
 
     def update_assets(self):
         updated = self.api.update(self.assets)
+
+        for key in updated.keys():
+            self.dump(self.assets.get(key))
+
         self.assets.update(updated)
 
 
