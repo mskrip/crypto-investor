@@ -71,7 +71,11 @@ $ docker run -p 5000:5000 \
              --name crypto-investor \
              -e PORT=5000 \
              -e COINAPI_KEY='<your coinapi key>' \
+             -e FIREBASE_API_KEY='<your firebase api key>' \
+             -e FIREBASE_PROJECT_ID='<id of firebase project>' \
+             -e FIREBASE_DATABASE_URL='<firebase database url>' \
              -e LOCAL_CURRENCY=EUR \
+             -v <local folder>:/srv/cryptoinvestor/ \
              registry.heroku.com/extreme-crypto-investor/web:latest
 ```
 
