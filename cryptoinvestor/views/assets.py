@@ -11,41 +11,36 @@ class AssetsListView(BaseView):
     def get_objects(self):
         assets = []
 
+        data = self.app.load()
+
+        graphs = {}
+
+        base = self.app.local_currency
+
         for name in self.app.assets:
+            if name == base:
+                continue
+
             asset = self.app.assets.get(name)
             if asset.is_loaded():
                 assets.append({
                     'id': name,
                     'name': asset.name,
-                    'rate': asset.rates.get(self.app.local_currency, {}).get('rate', 'N/A'),
+                    'rate': asset.rates.get(base, {}).get('rate', 'N/A'),
                 })
 
-        graphs = {
-            'BTC': {
+            graphs[name] = {
                 'data': [
                     {
-                        'x': [1, 2, 3],
-                        'y': [10, 20, 30],
+                        'x': [rate['time'] for rate in data.get(name, {}).get(base, [])],
+                        'y': [rate['rate'] for rate in data.get(name, {}).get(base, [])],
                         'type': 'scatter'
                     },
                 ],
                 'layout': {
-                    'title': 'Bitcoint'
-                }
-            },
-            'USD': {
-                'data': [
-                    {
-                        'x': [1, 2, 3],
-                        'y': [18, 2, 22],
-                        'type': 'scatter'
-                    },
-                ],
-                'layout': {
-                    'title': 'US Dollar'
+                    'title': asset.name
                 }
             }
-        }
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 
