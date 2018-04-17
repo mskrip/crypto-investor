@@ -17,6 +17,12 @@ from cryptoinvestor.urls import setup_urls
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(
+    handlers=[logging.StreamHandler(sys.stdout)],
+    level=logging.DEBUG,
+    format='[%(asctime)s] [%(levelname)s] %(message)s'
+)
+
 application = flask.Flask(__name__)
 
 setup_urls(application)
