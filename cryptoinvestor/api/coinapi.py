@@ -5,7 +5,7 @@ import logging
 from urllib.parse import urljoin
 
 from cryptoinvestor.api import ApiBase
-from cryptoinvestor.objects import Asset
+from cryptoinvestor.models.asset import Asset
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,7 @@ class Api(ApiBase):
         for asset in data:
             assets.append(Asset(
                 id=asset.get('asset_id'), name=asset.get('name'),
+                symbol=asset.get('asset_id'),
                 is_crypto=asset.get('type_is_crypto')
             ))
 

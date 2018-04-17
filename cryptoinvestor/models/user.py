@@ -1,4 +1,4 @@
-from cryptoinvestor.models.Account import Account
+from cryptoinvestor.models.account import Account
 
 
 class User:

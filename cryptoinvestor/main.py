@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import flask
+import json
 import logging
 import os
 import sys
@@ -8,8 +9,10 @@ import yaml
 
 
 from cryptoinvestor.api.coinapi import Api as CoinApi
-from cryptoinvestor.objects import Asset, Singleton
-from cryptoinvestor import views
+# from cryptoinvestor.api.coinmarketcap import Api as CoinMarketCapApi
+from cryptoinvestor.api.firebase import Api as FirebaseApi
+from cryptoinvestor.models.asset import Asset
+from cryptoinvestor import views, Singleton
 from cryptoinvestor.urls import setup_urls
 
 logger = logging.getLogger(__name__)
@@ -18,6 +21,7 @@ application = flask.Flask(__name__)
 
 setup_urls(application)
 
+DEFAULT_DUMP_PATH = '/srv/cryptoinvestor/data.dump.json'
 
 def setup_argparse():
     parser = argparse.ArgumentParser('CryptoInvestor app for investment simulations')

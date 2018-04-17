@@ -2,7 +2,7 @@ class Asset:
     class Error(Exception):
         pass
 
-    def __init__(self, id: str, name: str, is_crypto: bool):
+    def __init__(self, id: str, name: str, symbol: str, is_crypto: bool):
         """Asset of some currency with rates
 
         Arguments:
@@ -19,6 +19,7 @@ class Asset:
 
         self.id = id
         self.name = name
+        self.symbol = symbol
         self.is_crypto = is_crypto
         self.rates = {}
 
@@ -44,19 +45,3 @@ class Asset:
         """
 
         return len(self.rates) > 0
-
-
-class Singleton(type):
-    """
-    Define an Instance operation that lets clients access its unique
-    instance.
-    """
-
-    def __init__(self, name, bases, attrs, **kwargs):
-        super().__init__(name, bases, attrs)
-        self._instance = None
-
-    def __call__(self, *args, **kwargs):
-        if self._instance is None:
-            self._instance = super().__call__(*args, **kwargs)
-        return self._instance

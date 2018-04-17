@@ -1,5 +1,14 @@
 local_currency: ''
+dump_path: '/srv/cryptoinvestor/data.dump.json'
 api:
   coinapi:
     base_url: 'https://rest.coinapi.io/v1/'
     api_key: ''
+  coinmarketcap:
+    base_url: 'https://api.coinmarketcap.com/'
+  firebase:
+    email: ''
+    password: ''
+    api_key: ''
+    database_url: ''
+    project_id: ''
