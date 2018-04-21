@@ -27,7 +27,7 @@ application = flask.Flask(__name__)
 
 setup_urls(application)
 
-DEFAULT_DUMP_PATH = '/srv/cryptoinvestor/data.dump.json'
+DEFAULT_DUMP_PATH = '/srv/cryptoinvestor'
 
 
 def setup_argparse():
@@ -75,17 +75,7 @@ class App(metaclass=Singleton):
             )
             self.local_currency = 'EUR'
 
-        self.dump_path = self.config.get('dump_path')
-
-        if self.dump_path is None:
-            self.dump_path = os.environ.get('DUMP_PATH')
-
-        if self.dump_path is None:
-            logger.info(
-                'Dump path not found, defaulting to  `%s`. If you want to change that use env'
-                'variable \'DUMP_PATH\'', DEFAULT_DUMP_PATH
-            )
-            self.dump_path = DEFAULT_DUMP_PATH
+        self._setup_dump_file(self.config.get('dump_path'))
 
         try:
             self.firebase = FirebaseApi(self.config.get('api', {}).get('firebase'))
@@ -93,6 +83,22 @@ class App(metaclass=Singleton):
             logger.warn('Firebase was not set up and is not being used. %s', error)
 
         self.run()
+
+    def _setup_dump_file(self, path):
+        if path is None:
+            path = os.environ.get('DUMP_PATH')
+
+        if path is None:
+            logger.info(
+                'Dump path not found, defaulting to  `%s`. If you want to change that use env'
+                'variable \'DUMP_PATH\'', DEFAULT_DUMP_PATH
+            )
+            path = DEFAULT_DUMP_PATH
+
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+
+        self.dump_file = os.path.join(path, 'data.cryptoinvestor.dump.json')
 
     def add_asset(self, name: str, asset: Asset):
         """Adds new asset to app instance
@@ -109,8 +115,8 @@ class App(metaclass=Singleton):
         if self.firebase:
             load.update(self.firebase.load())
 
-        if os.path.exists(self.dump_path):
-            with open(self.dump_path, 'r') as fd:
+        if os.path.exists(self.dump_file):
+            with open(self.dump_file, 'r') as fd:
                 try:
                     load.update(json.load(fd))
                 except json.decoder.JSONDecodeError:
@@ -121,23 +127,17 @@ class App(metaclass=Singleton):
     def dump(self, asset: Asset):
         load = self.load()
 
-        if os.path.exists(self.dump_path):
-            dump_asset = load.get(asset.symbol, {})
+        dump_asset = load.get(asset.symbol, {})
 
-            for base in asset.rates.keys():
-                rate = dump_asset.get(base, [])
-                rate.append(asset.rates.get(base))
+        for base in asset.rates.keys():
+            rate = dump_asset.get(base, [])
+            rate.append(asset.rates.get(base))
 
-                dump_asset[base] = rate
+            dump_asset[base] = rate
 
-            load[asset.symbol] = dump_asset
+        load[asset.symbol] = dump_asset
 
-        else:
-            load.update({
-                asset.symbol: asset.rates
-            })
-
-        with open(self.dump_path, 'w') as fd:
+        with open(self.dump_file, 'w') as fd:
             json.dump(load, fd)
 
         if self.firebase:
