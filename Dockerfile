@@ -14,6 +14,7 @@ RUN set -x \
         nginx \
         runit \
     && pip install --upgrade pip setuptools \
+    && mkdir -p /srv/cryptoinvestor \
     && pip install crypto-investor-${CRYPTO_INVESTOR_VERSION}.tar.gz \
     && rm crypto-investor-${CRYPTO_INVESTOR_VERSION}.tar.gz \
     # Setup nginx

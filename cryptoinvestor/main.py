@@ -157,13 +157,13 @@ class App(metaclass=Singleton):
         base = self.local_currency
 
         btc = self.assets.get('BTC')
-        # eth = self.assets.get('ETH')
+        eth = self.assets.get('ETH')
 
         self.api.load(asset=btc, base=base, time=now)
         self.dump(btc)
 
-        # self.api.load(asset=eth, base=base, time=now)
-        # self.dump(eth)
+        self.api.load(asset=eth, base=base, time=now)
+        self.dump(eth)
 
     def update_assets(self):
         updated = self.api.update(self.assets)
