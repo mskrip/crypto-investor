@@ -47,23 +47,3 @@ class Asset:
         """
 
         return len(self.rates) > 0
-
-    def buy(self, crypto_name, count, price) -> bool:
-        if self.coin_status >= (count * price):
-            if self.bought[crypto_name] is None:
-                self.bought[crypto_name] = count
-            else:
-                self.bought[crypto_name] += count
-            self.coin_status -= count * price
-        else:
-            return False
-
-        return True
-
-    def sell(self, crypto_name, count, price) -> bool:
-        if self.bought[crypto_name] is None:
-            return False
-        else:
-            self.bought[crypto_name] -= count
-            self.coin_status += count * price
-        return True

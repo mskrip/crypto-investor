@@ -14,6 +14,7 @@ from cryptoinvestor.api.firebase import Api as FirebaseApi
 from cryptoinvestor.models.asset import Asset
 from cryptoinvestor import views, Singleton
 from cryptoinvestor.urls import setup_urls
+from cryptoinvestor.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class App(metaclass=Singleton):
         self.user = {'name': 'tester'}  # TODO: instance of user object
         self.config = {}
         self.firebase = None
-
+        self.user = User(username="tomas",password="123", account="Acc")
         try:
             if config_file:
                 self.config = yaml.load(config_file)
@@ -182,7 +183,7 @@ class App(metaclass=Singleton):
 
 def main(args=None):
     views.BaseView.app = App(config_file=args.config)
-    application.run()
+    application.run(debug = True)
 
 
 if __name__ == '__main__':
