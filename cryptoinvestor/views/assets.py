@@ -6,6 +6,8 @@ from flask import Flask, request
 
 
 class AssetsListView(BaseView):
+    methods = ['GET', 'POST']
+    
     def get_template_name(self):
         return 'assets/assets.html'
 
@@ -82,6 +84,12 @@ class AssetsListView(BaseView):
 
 
 class Test(BaseView):
+    methods = ['GET', 'POST']
+    #def dispatch_request(self):
+     #   if request.method == 'POST':
+      #      print("test")
+       # pass
+
     def get_template_name(self):
         return 'assets/assets.html'
 
@@ -118,7 +126,7 @@ class Test(BaseView):
                     'title': asset.name
                 }
             }
-        self.app.user.sell("btc", 1, 1000)
+        self.app.user.sell(1)
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 
@@ -166,7 +174,7 @@ class TestBuy(BaseView):
                 }
             }
         
-        self.app.user.buy("btc", 1, 1000)
+        self.app.user.buy( 1)
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 

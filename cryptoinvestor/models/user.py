@@ -1,4 +1,5 @@
 from cryptoinvestor.models.account import Account
+from flask import request
 
 
 class User:
@@ -12,8 +13,14 @@ class User:
         self.coin_status = 10000
         self.bought = dict()
 
-    def buy(self, crypto_name, count, price) -> bool:
+    def buy(self, count) -> bool:
+        crypto_id = request.args.get('id')
+        price = request.args.get('rate')
+        price = int(float(price))
+        crypto_name = request.args.get('name')
         print("ide buy "+crypto_name)
+        print("crypto id = ",  type(price))
+
         if self.coin_status >= (count * price):
             if self.bought.get(crypto_name) is None:
                 self.bought[crypto_name] = count
@@ -22,11 +29,15 @@ class User:
             self.coin_status -= count * price
             print("coins: ",self.coin_status," bought: ",self.bought)
         else:
+            print("You have not enough money")
             return False
-
         return True
 
-    def sell(self, crypto_name, count, price) -> bool:
+    def sell(self, count) -> bool:
+        crypto_id = request.args.get('id')
+        price = request.args.get('rate')
+        price = int(float(price))
+        crypto_name = request.args.get('name')
         print("ide sell "+crypto_name)
         
         if self.bought.get(crypto_name) is None or self.bought[crypto_name] == 0:
