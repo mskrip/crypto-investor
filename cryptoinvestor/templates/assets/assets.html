@@ -5,6 +5,12 @@
 
 {% block body %}
     <main>
+        <script>
+            function get(id,asset){
+                var count = $('#'+asset.name).val();
+                window.location.href =  "/"+id+"?id="+asset.id+'&name='+asset.name+'&rate='+asset.rate+'&count='+count;
+            }
+        </script>
         <table class="responsive-table highlight">
             <thead>
                 <tr>
@@ -18,28 +24,18 @@
             <tbody id="assets-table-body">
                 {% for asset in assets %}
                 <tr onclick="window.location='#{{ asset.id }}'; loadGraph();">
-                    <form method="POST">
                     <td>{{ asset.id }}</td>
                     <td>{{ asset.name }}</td>
                     <td>{{ asset.rate }}</td>
-                    
                     <td> 
-                            
-                               <input id="input_text" type="text" data-length="6">
-                               <label for="input_text">Cnt:</label>
-                          
-                       </td>
-                    <td> 
-                       
-                        <a class="waves-effect waves-light btn-small" href="/buy?id={{ asset.id }}&name={{asset.name}}&rate={{asset.rate}}" >Buy</a> 
-                        <a class="waves-effect waves-light btn-small" href="/sell?id={{ asset.id }}&name={{asset.name}}&rate={{asset.rate}}">Sell</a> 
-                        
-                        
+                        <input id="{{asset.name}}" type="number" data-length="6">
+                        <label for="input_text">Cnt:</label>   
                     </td>
-                    </form>
+                    <td> 
+                        <a id="buy_btn" class="waves-effect waves-light btn-small"  onclick="get('buy',{{asset}})" >Buy</a> 
+                        <a class="waves-effect waves-light btn-small" onclick="get('sell',{{asset}})">Sell</a> 
+                    </td>
                 </tr>
-                
-
                 {% endfor %}
             </tbody>
         </table>
@@ -49,3 +45,4 @@
         {% include "assets/graph.html" %}
     {% endif %}
 {% endblock %}
+

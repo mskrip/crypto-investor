@@ -83,7 +83,7 @@ class AssetsListView(BaseView):
         }
 
 
-class Test(BaseView):
+class Sell(BaseView):
     methods = ['GET', 'POST']
     #def dispatch_request(self):
      #   if request.method == 'POST':
@@ -126,7 +126,7 @@ class Test(BaseView):
                     'title': asset.name
                 }
             }
-        self.app.user.sell(1)
+        self.app.user.sell()
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 
@@ -136,7 +136,7 @@ class Test(BaseView):
             'graphJSON': graphs_json
         }
 
-class TestBuy(BaseView):
+class Buy(BaseView):
     def get_template_name(self):
         return 'assets/assets.html'
 
@@ -174,7 +174,7 @@ class TestBuy(BaseView):
                 }
             }
         
-        self.app.user.buy( 1)
+        self.app.user.buy()
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 

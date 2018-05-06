@@ -13,13 +13,13 @@ class User:
         self.coin_status = 10000
         self.bought = dict()
 
-    def buy(self, count) -> bool:
+    def buy(self) -> bool:
+        count = request.args.get('count')
+        count = float(count)
         crypto_id = request.args.get('id')
         price = request.args.get('rate')
-        price = int(float(price))
+        price = float(price)
         crypto_name = request.args.get('name')
-        print("ide buy "+crypto_name)
-        print("crypto id = ",  type(price))
 
         if self.coin_status >= (count * price):
             if self.bought.get(crypto_name) is None:
@@ -33,12 +33,13 @@ class User:
             return False
         return True
 
-    def sell(self, count) -> bool:
+    def sell(self) -> bool:
+        count = request.args.get('count')
+        count = float(count)
         crypto_id = request.args.get('id')
         price = request.args.get('rate')
-        price = int(float(price))
+        price = float(price)
         crypto_name = request.args.get('name')
-        print("ide sell "+crypto_name)
         
         if self.bought.get(crypto_name) is None or self.bought[crypto_name] == 0:
             print("You have nothing to sell")
