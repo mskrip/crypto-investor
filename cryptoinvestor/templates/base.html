@@ -25,6 +25,11 @@
 <body>
 {% block body %}
 {% endblock %}
+
+<script type="text/javascript" src="static/js/toasts.js"></script>
+<script type="text/javascript">
+    makeToasts({{ toasts | safe }});
+</script>
 </body>
 
 </html>

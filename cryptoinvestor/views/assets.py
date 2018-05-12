@@ -42,10 +42,39 @@ class AssetsListView(BaseView):
                 }
             }
 
+        toasts = []
+        for asset in assets:
+            id_ = asset.get('id', 'N/A')
+            current_rate = asset.get('rate', 0.00)
+            try:
+                previous_rate = data.get(id_, {}).get(base, [])[-2].get('rate', 0.00)
+                value = round((current_rate - previous_rate), 4)
+            except IndexError:
+                value = 0
+
+            toasts.append(self.add_toast(id_, value))
+
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 
         return {
             'assets': assets,
             'local_currency': self.app.local_currency,
-            'graphJSON': graphs_json
+            'graphJSON': graphs_json,
+            'toasts': toasts
+        }
+
+    def add_toast(self, id_='N/A', value=0.00):
+        if value > 0:
+            message = f"From last time {id_} went up by {value}!"
+            color = 'green'
+        elif value < 0:
+            message = f"From last time {id_} went down by {value}!"
+            color = 'red'
+        else:
+            message = f"From last time value of {id_} did not change!"
+            color = 'blue'
+
+        return {
+            'message': message,
+            'color': color
         }
