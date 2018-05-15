@@ -14,3 +14,8 @@ div.graph {
         padding-right: 0;
     }
 }
+
+#toast-container {
+  top: auto !important;
+  left: auto !important;
+}

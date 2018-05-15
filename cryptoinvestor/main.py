@@ -173,6 +173,12 @@ class App(metaclass=Singleton):
 
         self.assets.update(updated)
 
+    def add_toast(self, message='No content', color='black'):
+        return {
+            'message': message,
+            'color': color
+        }
+
 
 def main(args=None):
     views.BaseView.app = App(config_file=args.config)
