@@ -3,7 +3,7 @@
 all: install lint
 
 venv:
-	python3 -m venv .venv/
+	python -m venv .venv/
 
 install:
 	pip install --upgrade setuptools
@@ -13,7 +13,7 @@ lint:
 	flake8
 
 test:
-	python3 -m pytest
+	python -m pytest
 
 sdist:
-	python3 setup.py sdist
+	python setup.py sdist

@@ -183,7 +183,7 @@ class App(metaclass=Singleton):
 
 def main(args=None):
     views.BaseView.app = App(config_file=args.config)
-    application.run(debug = True)
+    application.run()
 
 
 if __name__ == '__main__':

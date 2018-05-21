@@ -20,18 +20,18 @@ class User:
             else:
                 self.bought[crypto_name] += count
             self.coin_status -= count * price
-            print("coins: ",self.coin_status," bought: ",self.bought)
+           # print("coins: ",self.coin_status," bought: ",self.bought)
         else:
-            print("You have not enough money")
+           # print("You have not enough money")
             return False
         return True
 
     def sell(self,count, price, crypto_name) -> bool:
         if self.bought.get(crypto_name) is None or self.bought[crypto_name] == 0:
-            print("You have nothing to sell")
+           # print("You have nothing to sell")
             return False
         else:
             self.bought[crypto_name] -= count
             self.coin_status += count * price
-            print("coins: ",self.coin_status," bought: ",self.bought)
+            #print("coins: ",self.coin_status," bought: ",self.bought)
         return True
