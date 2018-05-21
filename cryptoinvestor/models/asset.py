@@ -22,8 +22,7 @@ class Asset:
         self.symbol = symbol
         self.is_crypto = is_crypto
         self.rates = {}
-        self.coin_status = 10000
-        self.bought = dict()
+        
 
     def set_rate(self, base: str, rate: float, time: str):
         """Adds a rate with some base to the currency

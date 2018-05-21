@@ -14,11 +14,8 @@ class User:
         self.bought = dict()
 
     def buy(self) -> bool:
-        count = request.args.get('count')
-        count = float(count)
-        crypto_id = request.args.get('id')
-        price = request.args.get('rate')
-        price = float(price)
+        count = float(request.args.get('count'))
+        price = float(request.args.get('rate'))
         crypto_name = request.args.get('name')
 
         if self.coin_status >= (count * price):
@@ -34,11 +31,8 @@ class User:
         return True
 
     def sell(self) -> bool:
-        count = request.args.get('count')
-        count = float(count)
-        crypto_id = request.args.get('id')
-        price = request.args.get('rate')
-        price = float(price)
+        count = float(request.args.get('count'))
+        price = float(request.args.get('rate'))
         crypto_name = request.args.get('name')
         
         if self.bought.get(crypto_name) is None or self.bought[crypto_name] == 0:
