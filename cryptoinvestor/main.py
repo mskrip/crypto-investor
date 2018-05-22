@@ -53,6 +53,7 @@ class App(metaclass=Singleton):
 
         self.assets = {}
         self.config = {}
+        self.cache = {}
         self.firebase = None
         self.user = User(username="user", password="123", account=Account(self.assets, 10000))
         try:
