@@ -38,7 +38,7 @@ class AssetsListView(BaseView):
                 assets.append({
                     'id': name,
                     'name': asset.name,
-                    'rate': asset.rates.get(base, {}).get('rate', 'N/A'),
+                    'rate': asset.rates.get(base, []).get('rate', 'N/A'),
                 })
 
             graphs[name] = {
@@ -70,14 +70,13 @@ class AssetsListView(BaseView):
         action = request.path
 
         count = float(request.args.get('count', 0))
-        price = float(request.args.get('rate', 0))
         crypto_id = request.args.get('id', '')
 
         if(action == "/sell"):
-            self.app.user.sell(count, price, crypto_id)
+            total = self.app.user.sell(count, crypto_id)
             msgs = [
                 self.toast(SUCCESS_MSG.format(
-                    'sold', count, crypto_id, count * price, self.app.local_currency
+                    'sold', count, crypto_id, total, self.app.local_currency
                 ), 'green')
             ]
 
@@ -86,10 +85,10 @@ class AssetsListView(BaseView):
         elif(action == "/buy"):
             msgs = []
             try:
-                self.app.user.buy(count, price, crypto_id)
+                total = self.app.user.buy(count, crypto_id)
                 msgs = [
                     self.toast(SUCCESS_MSG.format(
-                        'bough', count, crypto_id, count * price, self.app.local_currency
+                        'bough', count, crypto_id, total, self.app.local_currency
                     ), 'green'),
                 ]
             except self.app.user.Error as e:

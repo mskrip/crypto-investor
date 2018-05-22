@@ -8,7 +8,7 @@
         <script>
             function get(id,asset){
                 var count = $('#'+asset.id).val();
-                window.location.href =  "/"+id+'?id='+asset.id+'&rate='+asset.rate+'&count='+count;
+                window.location.href = "/"+id+'?id='+asset.id+'&count='+count;
             }
         </script>
         <table class="responsive-table highlight">
@@ -32,8 +32,8 @@
                         <label for="input_text">Amount:</label>
                     </td>
                     <td>
-                        <a class="waves-effect waves-light btn-small"  onclick="get('buy',{{asset}})" >Buy</a>
-                        <a class="waves-effect waves-light btn-small" onclick="get('sell',{{asset}})">Sell</a>
+                        <a class="waves-effect waves-light btn-small" onclick="get('buy', {{ asset | safe }})">Buy</a>
+                        <a class="waves-effect waves-light btn-small" onclick="get('sell', {{ asset | safe }})">Sell</a>
                     </td>
                 </tr>
                 {% endfor %}
