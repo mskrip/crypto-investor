@@ -15,6 +15,7 @@ from cryptoinvestor.models.asset import Asset
 from cryptoinvestor import views, Singleton
 from cryptoinvestor.urls import setup_urls
 from cryptoinvestor.models.user import User
+from cryptoinvestor.models.account import Account
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class App(metaclass=Singleton):
         self.assets = {}
         self.config = {}
         self.firebase = None
-        self.user = User(username="tomas", password="123", account="Acc")
+        self.user = User(username="tomas", password="123", account=Account(10000))
         try:
             if config_file:
                 self.config = yaml.load(config_file)
