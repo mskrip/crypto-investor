@@ -51,10 +51,9 @@ class App(metaclass=Singleton):
         """
 
         self.assets = {}
-        self.user = {'name': 'tester'}  # TODO: instance of user object
         self.config = {}
         self.firebase = None
-        self.user = User(username="tomas",password="123", account="Acc")
+        self.user = User(username="tomas", password="123", account="Acc")
         try:
             if config_file:
                 self.config = yaml.load(config_file)
