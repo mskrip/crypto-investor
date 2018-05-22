@@ -5,12 +5,20 @@
 
 {% block body %}
     <main>
+        <script>
+            function get(id,asset){
+                var count = $('#'+asset.name).val();
+                window.location.href =  "/"+id+'?name='+asset.name+'&rate='+asset.rate+'&count='+count;
+            }
+        </script>
         <table class="responsive-table highlight">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
                     <th>Rate to {{ local_currency }}</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="assets-table-body">
@@ -19,6 +27,14 @@
                     <td>{{ asset.id }}</td>
                     <td>{{ asset.name }}</td>
                     <td>{{ asset.rate }}</td>
+                    <td> 
+                        <input id="{{asset.name}}" type="number" data-length="6">
+                        <label for="input_text">Amount:</label>   
+                    </td>
+                    <td> 
+                        <a class="waves-effect waves-light btn-small"  onclick="get('buy',{{asset}})" >Buy</a> 
+                        <a class="waves-effect waves-light btn-small" onclick="get('sell',{{asset}})">Sell</a> 
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

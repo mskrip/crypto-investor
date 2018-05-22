@@ -2,9 +2,12 @@ import plotly
 import json
 
 from cryptoinvestor.views import BaseView
+from flask import request
 
 
 class AssetsListView(BaseView):
+    methods = ['GET']
+
     def get_template_name(self):
         return 'assets/assets.html'
 
@@ -55,6 +58,17 @@ class AssetsListView(BaseView):
             toasts.append(self.add_toast(id_, value))
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+        action = request.path
+
+        if(action != "/assets"):
+            count = float(request.args.get('count'))
+            price = float(request.args.get('rate'))
+            crypto_name = request.args.get('name')
+
+        if(action == "/sell"):
+            self.app.user.sell(count, price, crypto_name)
+        elif(action == "/buy"):
+            self.app.user.buy(count, price, crypto_name)
 
         return {
             'assets': assets,
