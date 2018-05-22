@@ -11,40 +11,62 @@ class User:
         self.account = account
         self.bought = dict()
 
-    def buy(self, count: float, crypto_name: str) -> float:
-        asset = self.account.assets.get(crypto_name)
+    def buy(self, count: float, a_name: str) -> float:
+        asset = self.account.assets.get(a_name)
         if not asset or not asset.is_loaded():
-            raise self.Error(f"{crypto_name} is not a valid cryptocurrency or is not loaded")
+            raise self.Error(f"{a_name} is not a valid cryptocurrency or is not loaded")
 
         if count < 0:
             raise self.Error(f"{count} is not a valid number of units")
 
-        price = asset.rates.get(self.account.local_currency).get('rate')
+        lc = self.account.local_currency
 
-        if self.account.balance >= (count * price):
-            if self.bought.get(crypto_name) is None:
-                self.bought[crypto_name] = count
-            else:
-                self.bought[crypto_name] += count
-            self.account.balance -= count * price
-            return price * count
-        return 0
+        price = asset.rates.get(lc).get('rate')
 
-    def sell(self, count: float, crypto_name: str) -> float:
-        asset = self.account.assets.get(crypto_name)
+        s = count * price
+
+        if self.balance() < s:
+            raise self.Error(
+                f"Buying {count} of {a_name} would cost {s} {lc}. You have {self.balance()} {lc}"
+            )
+
+        owned = self.bought.get(a_name, 0)
+
+        self.bought[a_name] = owned + count
+        self._buy(s)
+
+        return s
+
+    def sell(self, count: float, a_name: str) -> float:
+        asset = self.account.assets.get(a_name)
         if not asset or not asset.is_loaded():
-            raise self.Error(f"{crypto_name} is not a valid cryptocurrency or is not loaded")
+            raise self.Error(f"{a_name} is not a valid cryptocurrency or is not loaded")
 
         if count < 0:
             raise self.Error(f"{count} is not a valid number of units")
 
+        owned = self.bought.get(a_name, 0)
+
+        if owned == 0:
+            raise self.Error(f"You own no {a_name}")
+
+        if owned < count:
+            raise self.Error(f"You can't sell {count} of {a_name}.You have only {owned}.")
+
         price = asset.rates.get(self.account.local_currency).get('rate')
 
-        if not self.bought.get(crypto_name, 0) == 0:
-            self.bought[crypto_name] -= count
-            self.account.balance += count * price
-            return count * price
-        return 0
+        s = count * price
+
+        self.bought[a_name] -= count
+        self._sell(s)
+
+        return s
+
+    def _buy(self, sum: float):
+        self.account.balance -= sum
+
+    def _sell(self, sum: float):
+        self.account.balance += sum
 
     def balance(self) -> float:
         return self.account.balance

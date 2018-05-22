@@ -1,4 +1,5 @@
 import random
+import pytest
 import string
 
 from cryptoinvestor.models.account import Account
@@ -61,7 +62,7 @@ class TestUser:
 
         assert user.balance() == INITIAL_CAPITAL
 
-        btc_rate = user.account.assets.get('BTC').rates[BASE_CURRENCY]['rate']
+        btc_rate = self._rate_for(user, "BTC")
 
         t1 = user.buy(1, "BTC")
 
@@ -69,7 +70,7 @@ class TestUser:
 
         assert user.balance() == INITIAL_CAPITAL - (1 * btc_rate)
 
-        eth_rate = user.account.assets.get('ETH').rates[BASE_CURRENCY]['rate']
+        eth_rate = self._rate_for(user, "ETH")
 
         t2 = user.buy(1, "ETH")
 
@@ -77,9 +78,9 @@ class TestUser:
 
         t3 = user.buy(10e-4, "ETH")
 
-        assert round(t3, 6) == round((10e-4 * eth_rate), 6)
+        assert t3 == pytest.approx(10e-4 * eth_rate)
 
-        assert round(user.balance(), 6) == round(INITIAL_CAPITAL - (t1 + t2 + t3), 6)
+        assert user.balance() == pytest.approx(INITIAL_CAPITAL - (t1 + t2 + t3))
 
     def test_buy_nonexistant_currency(self):
         user = self._create_user()
@@ -88,39 +89,112 @@ class TestUser:
             string.ascii_uppercase, k=random.randint(2, 20)
         )) for _ in range(1000)]
 
-        try:
-            for c in non_existant_currencies:
-                if c not in RATES.keys():
-                    assert user.buy(1, c) == 0
-        except user.Error:
-            pass
+        for c in non_existant_currencies:
+            if c not in RATES.keys():
+                with pytest.raises(user.Error):
+                    user.buy(1, c)
 
         assert user.balance() == INITIAL_CAPITAL
+
+    def test_buy_too_much(self):
+        user = self._create_user()
+
+        with pytest.raises(user.Error):
+            user.buy(999, "BTC")
+
+        t1 = user.buy(0.5, "BTC")
+
+        with pytest.raises(user.Error):
+            user.buy(999, "BTC")
+
+        assert user.balance() == INITIAL_CAPITAL - t1
 
     def test_buy_negative(self):
         user = self._create_user()
 
-        try:
-            assert user.buy(-1, "BTC") == 0
-        except user.Error:
-            pass
+        with pytest.raises(user.Error):
+            user.buy(-1, "BTC")
 
         assert user.balance() == INITIAL_CAPITAL
 
         t1 = user.buy(1, "ETH")
 
-        assert round(user.balance(), 6) == round(INITIAL_CAPITAL - t1, 6)
+        assert user.balance() == pytest.approx(INITIAL_CAPITAL - t1)
 
-        try:
-            assert user.buy(-0.0001, "BTC") == 0
-        except user.Error:
-            pass
+        with pytest.raises(user.Error):
+            user.buy(-0.0001, "BTC")
 
-        assert round(user.balance(), 6) == round(INITIAL_CAPITAL - t1, 6)
+        assert user.balance() == pytest.approx(INITIAL_CAPITAL - t1)
 
-        try:
-            assert user.buy(-0.0001, "ETH") == 0
-        except user.Error:
-            pass
+        with pytest.raises(user.Error):
+            user.buy(-0.0001, "ETH")
 
-        assert round(user.balance(), 6) == round(INITIAL_CAPITAL - t1, 6)
+        assert user.balance() == pytest.approx(INITIAL_CAPITAL - t1)
+
+    def test_sell_not_owned(self):
+        user = self._create_user()
+
+        with pytest.raises(user.Error):
+            user.sell(1, "BTC") is None
+
+        assert user.balance() == INITIAL_CAPITAL
+
+    def test_sell_all_owned(self):
+        user = self._create_user()
+
+        btc_rate = self._rate_for(user, "BTC")
+        eth_rate = self._rate_for(user, "ETH")
+
+        user.buy(1, "BTC")
+        user.buy(2, "ETH")
+
+        assert user.sell(0.5, "BTC") == btc_rate * 0.5
+        assert user.sell(1.2, "ETH") == eth_rate * 1.2
+        assert user.sell(0.8, "ETH") == eth_rate * 0.8
+        assert user.sell(0.3, "BTC") == btc_rate * 0.3
+        assert user.sell(0.2, "BTC") == btc_rate * 0.2
+
+        assert user.balance() == INITIAL_CAPITAL
+
+    def test_sell_not_enough_owned(self):
+        user = self._create_user()
+
+        btc_rate = self._rate_for(user, "BTC")
+
+        user.buy(1, "BTC")
+
+        t1 = user.sell(0.5, "BTC")
+
+        assert t1 == btc_rate * 0.5
+
+        with pytest.raises(user.Error):
+            user.sell(0.51, "BTC")
+
+        assert user.balance() == (INITIAL_CAPITAL - t1)
+
+        t2 = user.sell(0.5, "BTC")
+
+        assert t2 == btc_rate * 0.5
+
+        assert user.balance() == INITIAL_CAPITAL
+
+    def test_sell_negative(self):
+        user = self._create_user()
+
+        t1 = user.buy(1, "BTC")
+
+        t2 = user.buy(1, "ETH")
+
+        with pytest.raises(user.Error):
+            user.sell(-1, "BTC")
+
+        with pytest.raises(user.Error):
+            user.sell(-0.1, "BTC")
+
+        with pytest.raises(user.Error):
+            user.sell(-2, "ETH")
+
+        with pytest.raises(user.Error):
+            user.sell(-0.0001, "ETH")
+
+        assert user.balance() == pytest.approx(INITIAL_CAPITAL - (t1 + t2))

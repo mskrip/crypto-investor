@@ -73,12 +73,15 @@ class AssetsListView(BaseView):
         crypto_id = request.args.get('id', '')
 
         if(action == "/sell"):
-            total = self.app.user.sell(count, crypto_id)
-            msgs = [
-                self.toast(SUCCESS_MSG.format(
-                    'sold', count, crypto_id, total, self.app.local_currency
-                ), 'green')
-            ]
+            try:
+                total = self.app.user.sell(count, crypto_id)
+                msgs = [
+                    self.toast(SUCCESS_MSG.format(
+                        'sold', count, crypto_id, total, self.app.local_currency
+                    ), 'green')
+                ]
+            except self.app.user.Error as e:
+                msgs = [self.toast(e, 'red')]
 
             return {'redirect': self._prepare_redirect(msgs)}
 
