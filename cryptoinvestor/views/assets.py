@@ -4,6 +4,8 @@ import json
 from cryptoinvestor.views import BaseView
 from flask import request
 
+SUCCESS_MSG = "You have successfuly {} {} {} for total of {} {}"
+
 
 class AssetsListView(BaseView):
     methods = ['GET']
@@ -13,6 +15,13 @@ class AssetsListView(BaseView):
 
     def get_objects(self):
         assets = []
+        toasts = []
+
+        context = {}
+        rd_key = request.args.get('redirected')
+        if rd_key:
+            messages = self.app.cache.get(int(rd_key), {}).get('messages', [])
+            toasts += messages
 
         data = self.app.load()
 
@@ -45,39 +54,71 @@ class AssetsListView(BaseView):
                 }
             }
 
-        toasts = []
-        for asset in assets:
-            id_ = asset.get('id', 'N/A')
-            current_rate = asset.get('rate', 0.00)
-            try:
-                previous_rate = data.get(id_, {}).get(base, [])[-2].get('rate', 0.00)
-                value = round((current_rate - previous_rate), 4)
-            except IndexError:
-                value = 0
+        if not rd_key:
+            for asset in assets:
+                id_ = asset.get('id', 'N/A')
+                current_rate = asset.get('rate', 0.00)
+                try:
+                    previous_rate = data.get(id_, {}).get(base, [])[-2].get('rate', 0.00)
+                    value = round((current_rate - previous_rate), 4)
+                except IndexError:
+                    value = 0
 
-            toasts.append(self.add_toast(id_, value))
+                toasts.append(self._crypto_toast(id_, value))
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
         action = request.path
 
-        if(action != "/assets"):
-            count = float(request.args.get('count'))
-            price = float(request.args.get('rate'))
-            crypto_name = request.args.get('name')
+        count = float(request.args.get('count', 0))
+        price = float(request.args.get('rate', 0))
+        crypto_id = request.args.get('id', '')
 
         if(action == "/sell"):
-            self.app.user.sell(count, price, crypto_name)
-        elif(action == "/buy"):
-            self.app.user.buy(count, price, crypto_name)
+            self.app.user.sell(count, price, crypto_id)
+            msgs = [
+                self.toast(SUCCESS_MSG.format(
+                    'sold', count, crypto_id, count * price, self.app.local_currency
+                ), 'green')
+            ]
 
-        return {
+            return {'redirect': self._prepare_redirect(msgs)}
+
+        elif(action == "/buy"):
+            msgs = []
+            try:
+                self.app.user.buy(count, price, crypto_id)
+                msgs = [
+                    self.toast(SUCCESS_MSG.format(
+                        'bough', count, crypto_id, count * price, self.app.local_currency
+                    ), 'green'),
+                ]
+            except self.app.user.Error as e:
+                msgs = [self.toast(e, 'red')]
+
+            return {'redirect': self._prepare_redirect(msgs)}
+
+        context.update({
             'assets': assets,
             'local_currency': self.app.local_currency,
             'graphJSON': graphs_json,
             'toasts': toasts
+        })
+
+        return context
+
+    def _prepare_redirect(self, msgs: [str]) -> int:
+        data = {
+            'view': 'assets_listview',
+            'messages': msgs
         }
 
-    def add_toast(self, id_='N/A', value=0.00):
+        key = hash(str(data))
+
+        self.app.cache[key] = data
+
+        return key
+
+    def _crypto_toast(self, id_='N/A', value=0.00):
         if value > 0:
             message = f"From last time {id_} went up by {value}!"
             color = 'green'
@@ -88,7 +129,10 @@ class AssetsListView(BaseView):
             message = f"From last time value of {id_} did not change!"
             color = 'blue'
 
+        return self.toast(message, color)
+
+    def toast(self, msg="", color="blue"):
         return {
-            'message': message,
+            'message': msg,
             'color': color
         }
