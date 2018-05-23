@@ -25,3 +25,21 @@ class BaseView(View):
             return redirect(url_for(path, redirected=rd))
 
         return self.render_template(context)
+
+    def _prepare_redirect(self, msgs: [str]) -> int:
+        data = {
+            'view': 'assets_listview',
+            'messages': msgs
+        }
+
+        key = hash(str(data))
+
+        self.app.cache[key] = data
+
+        return key
+
+    def toast(self, msg="", color="blue"):
+        return {
+            'message': msg,
+            'color': color
+        }

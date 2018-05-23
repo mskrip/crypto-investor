@@ -67,37 +67,6 @@ class AssetsListView(BaseView):
                 toasts.append(self._crypto_toast(id_, value))
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
-        action = request.path
-
-        count = float(request.args.get('count', 0))
-        crypto_id = request.args.get('id', '')
-
-        if(action == "/sell"):
-            try:
-                total = self.app.user.sell(count, crypto_id)
-                msgs = [
-                    self.toast(SUCCESS_MSG.format(
-                        'sold', count, crypto_id, total, self.app.local_currency
-                    ), 'green')
-                ]
-            except self.app.user.Error as e:
-                msgs = [self.toast(e, 'red')]
-
-            return {'redirect': self._prepare_redirect(msgs)}
-
-        elif(action == "/buy"):
-            msgs = []
-            try:
-                total = self.app.user.buy(count, crypto_id)
-                msgs = [
-                    self.toast(SUCCESS_MSG.format(
-                        'bough', count, crypto_id, total, self.app.local_currency
-                    ), 'green'),
-                ]
-            except self.app.user.Error as e:
-                msgs = [self.toast(e, 'red')]
-
-            return {'redirect': self._prepare_redirect(msgs)}
 
         context.update({
             'assets': assets,
@@ -107,18 +76,6 @@ class AssetsListView(BaseView):
         })
 
         return context
-
-    def _prepare_redirect(self, msgs: [str]) -> int:
-        data = {
-            'view': 'assets_listview',
-            'messages': msgs
-        }
-
-        key = hash(str(data))
-
-        self.app.cache[key] = data
-
-        return key
 
     def _crypto_toast(self, id_='N/A', value=0.00):
         if value > 0:
@@ -133,8 +90,39 @@ class AssetsListView(BaseView):
 
         return self.toast(message, color)
 
-    def toast(self, msg="", color="blue"):
-        return {
-            'message': msg,
-            'color': color
-        }
+
+class BuyView(BaseView):
+    def get_objects(self):
+        count = float(request.args.get('count', 0))
+        crypto_id = request.args.get('id', '')
+
+        msgs = []
+        try:
+            total = self.app.user.buy(count, crypto_id)
+            msgs = [
+                self.toast(SUCCESS_MSG.format(
+                    'bough', count, crypto_id, total, self.app.local_currency
+                ), 'green'),
+            ]
+        except self.app.user.Error as e:
+            msgs = [self.toast(e, 'red')]
+
+        return {'redirect': self._prepare_redirect(msgs)}
+
+
+class SellView(BaseView):
+    def get_objects(self):
+        count = float(request.args.get('count', 0))
+        crypto_id = request.args.get('id', '')
+
+        try:
+            total = self.app.user.sell(count, crypto_id)
+            msgs = [
+                self.toast(SUCCESS_MSG.format(
+                    'sold', count, crypto_id, total, self.app.local_currency
+                ), 'green')
+            ]
+        except self.app.user.Error as e:
+            msgs = [self.toast(e, 'red')]
+
+        return {'redirect': self._prepare_redirect(msgs)}
