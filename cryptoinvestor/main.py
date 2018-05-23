@@ -53,8 +53,11 @@ class App(metaclass=Singleton):
 
         self.assets = {}
         self.config = {}
+        self.cache = {}
         self.firebase = None
-        self.user = User(username="tomas", password="123", account=Account(10000))
+        self.user = User(
+            username="user", password="123", account=Account(self.assets, balance=10000)
+        )
         try:
             if config_file:
                 self.config = yaml.load(config_file)
@@ -160,11 +163,21 @@ class App(metaclass=Singleton):
         btc = self.assets.get('BTC')
         eth = self.assets.get('ETH')
 
+        data = self.load()
+
         self.api.load(asset=btc, base=base, time=now)
-        self.dump(btc)
+        if self.api.error:
+            last = data.get('BTC').get(base)[-1]
+            btc.set_rate(base=base, rate=last.get('rate'), time=last.get('time'))
+        else:
+            self.dump(btc)
 
         self.api.load(asset=eth, base=base, time=now)
-        self.dump(eth)
+        if self.api.error:
+            last = data.get('ETH').get(base)[-1]
+            eth.set_rate(base=base, rate=last.get('rate'), time=last.get('time'))
+        else:
+            self.dump(eth)
 
     def update_assets(self):
         updated = self.api.update(self.assets)

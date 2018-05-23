@@ -4,6 +4,8 @@ import json
 from cryptoinvestor.views import BaseView
 from flask import request
 
+SUCCESS_MSG = "You have successfuly {} {} {} for total of {} {}"
+
 
 class AssetsListView(BaseView):
     methods = ['GET']
@@ -13,6 +15,13 @@ class AssetsListView(BaseView):
 
     def get_objects(self):
         assets = []
+        toasts = []
+
+        context = {}
+        rd_key = request.args.get('redirected')
+        if rd_key:
+            messages = self.app.cache.get(int(rd_key), {}).get('messages', [])
+            toasts += messages
 
         data = self.app.load()
 
@@ -29,7 +38,7 @@ class AssetsListView(BaseView):
                 assets.append({
                     'id': name,
                     'name': asset.name,
-                    'rate': asset.rates.get(base, {}).get('rate', 'N/A'),
+                    'rate': asset.rates.get(base, []).get('rate', 'N/A'),
                 })
 
             graphs[name] = {
@@ -45,39 +54,30 @@ class AssetsListView(BaseView):
                 }
             }
 
-        toasts = []
-        for asset in assets:
-            id_ = asset.get('id', 'N/A')
-            current_rate = asset.get('rate', 0.00)
-            try:
-                previous_rate = data.get(id_, {}).get(base, [])[-2].get('rate', 0.00)
-                value = round((current_rate - previous_rate), 4)
-            except IndexError:
-                value = 0
+        if not rd_key:
+            for asset in assets:
+                id_ = asset.get('id', 'N/A')
+                current_rate = asset.get('rate', 0.00)
+                try:
+                    previous_rate = data.get(id_, {}).get(base, [])[-2].get('rate', 0.00)
+                    value = round((current_rate - previous_rate), 4)
+                except IndexError:
+                    value = 0
 
-            toasts.append(self.add_toast(id_, value))
+                toasts.append(self._crypto_toast(id_, value))
 
         graphs_json = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
-        action = request.path
 
-        if(action != "/assets"):
-            count = float(request.args.get('count'))
-            price = float(request.args.get('rate'))
-            crypto_name = request.args.get('name')
-
-        if(action == "/sell"):
-            self.app.user.sell(count, price, crypto_name)
-        elif(action == "/buy"):
-            self.app.user.buy(count, price, crypto_name)
-
-        return {
+        context.update({
             'assets': assets,
             'local_currency': self.app.local_currency,
             'graphJSON': graphs_json,
             'toasts': toasts
-        }
+        })
 
-    def add_toast(self, id_='N/A', value=0.00):
+        return context
+
+    def _crypto_toast(self, id_='N/A', value=0.00):
         if value > 0:
             message = f"From last time {id_} went up by {value}!"
             color = 'green'
@@ -88,7 +88,41 @@ class AssetsListView(BaseView):
             message = f"From last time value of {id_} did not change!"
             color = 'blue'
 
-        return {
-            'message': message,
-            'color': color
-        }
+        return self.toast(message, color)
+
+
+class BuyView(BaseView):
+    def get_objects(self):
+        count = float(request.args.get('count', 0))
+        crypto_id = request.args.get('id', '')
+
+        msgs = []
+        try:
+            total = self.app.user.buy(count, crypto_id)
+            msgs = [
+                self.toast(SUCCESS_MSG.format(
+                    'bough', count, crypto_id, total, self.app.local_currency
+                ), 'green'),
+            ]
+        except self.app.user.Error as e:
+            msgs = [self.toast(e, 'red')]
+
+        return {'redirect': self._prepare_redirect(msgs)}
+
+
+class SellView(BaseView):
+    def get_objects(self):
+        count = float(request.args.get('count', 0))
+        crypto_id = request.args.get('id', '')
+
+        try:
+            total = self.app.user.sell(count, crypto_id)
+            msgs = [
+                self.toast(SUCCESS_MSG.format(
+                    'sold', count, crypto_id, total, self.app.local_currency
+                ), 'green')
+            ]
+        except self.app.user.Error as e:
+            msgs = [self.toast(e, 'red')]
+
+        return {'redirect': self._prepare_redirect(msgs)}

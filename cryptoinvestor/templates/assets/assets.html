@@ -7,8 +7,8 @@
     <main>
         <script>
             function get(id,asset){
-                var count = $('#'+asset.name).val();
-                window.location.href =  "/"+id+'?name='+asset.name+'&rate='+asset.rate+'&count='+count;
+                var count = $('#'+asset.id).val();
+                window.location.href = "/"+id+'?id='+asset.id+'&count='+count;
             }
         </script>
         <table class="responsive-table highlight">
@@ -27,13 +27,13 @@
                     <td>{{ asset.id }}</td>
                     <td>{{ asset.name }}</td>
                     <td>{{ asset.rate }}</td>
-                    <td> 
-                        <input id="{{asset.name}}" type="number" data-length="6">
-                        <label for="input_text">Amount:</label>   
+                    <td>
+                        <input id="{{asset.id}}" type="number" data-length="6">
+                        <label for="input_text">Amount:</label>
                     </td>
-                    <td> 
-                        <a class="waves-effect waves-light btn-small"  onclick="get('buy',{{asset}})" >Buy</a> 
-                        <a class="waves-effect waves-light btn-small" onclick="get('sell',{{asset}})">Sell</a> 
+                    <td>
+                        <a class="waves-effect waves-light btn-small" onclick="get('buy', {{ asset | safe }})">Buy</a>
+                        <a class="waves-effect waves-light btn-small" onclick="get('sell', {{ asset | safe }})">Sell</a>
                     </td>
                 </tr>
                 {% endfor %}
