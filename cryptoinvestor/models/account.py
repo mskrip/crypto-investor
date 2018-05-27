@@ -7,3 +7,10 @@ class Account:
         self.local_currency = local_currency
         self.balance = balance
         self.assets = assets
+        self.investments = dict()
+
+    def buy(self, sum: float):
+        self.balance -= sum
+
+    def sell(self, sum: float):
+        self.balance += sum

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% set active_page ='investments_listview' -%}
+
+{% block title %}My Investments{% endblock %}
+
+{% block body %}
+    <main>
+        <table class="responsive-table highlight">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Bought/Sold At</th>
+                    <th>Profit</th>
+                </tr>
+            </thead>
+            <tbody id="investments-table-body">
+                {% for key, value in investments.items() %}
+                    {% for investment in value %}
+                        <tr >
+                            <td>{{ key }}</td>
+                            {% if investment['amount'] > 0 %}
+                                <td class="green-text"><b>+{{ investment['amount'] }}</b></td>
+                            {% else %}
+                                <td class="red-text"><b>{{ investment['amount'] }}</b></td>
+                            {% endif %}
+                            <td>{{ investment['price'] }} {{ currency }}</td>
+                            <td>
+                                {% if investment['profit'] > 0 %}
+                                    <span class="green-text">
+                                        <i class="tiny material-icons">keyboard_arrow_up</i>
+                                        <b>+{{ investment['profit'] }} {{ currency }}</b>
+                                    </span>
+                                {% elif investment['profit'] < 0 %}
+                                    <span class="red-text">
+                                        <i class="tiny material-icons">keyboard_arrow_down</i>
+                                        <b>{{ investment['profit'] }} {{ currency }}</b>
+                                    </span>
+                                {% else %}
+                                    <span class="blue-text">
+                                        <i class="tiny material-icons">remove</i>
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+{% endblock %}
