@@ -198,3 +198,40 @@ class TestUser:
             user.sell(-0.0001, "ETH")
 
         assert user.balance() == pytest.approx(INITIAL_CAPITAL - (t1 + t2))
+
+    def test_profit(self):
+        user = self._create_user()
+
+        user.buy(1, "BTC")
+        user.buy(2, "ETH")
+
+        delta = {
+            'BTC': 2.3432,
+            'ETH': 14.3432
+        }
+
+        self.change_rate(user, delta)
+
+        user.account.assets = self._assets()
+
+        delta = {
+            'BTC': -8.34332,
+            'ETH': -23.43232
+        }
+
+        self.change_rate(user, delta)
+
+    def change_rate(self, user: User, delta: dict):
+        for key in delta:
+            user.account.assets[
+                key
+                ].rates[
+                    BASE_CURRENCY
+                    ]['rate'] = user.account.assets[key].rates[BASE_CURRENCY]['rate'] + delta[key]
+
+        investments = user.get_investments(BASE_CURRENCY)
+
+        for key in delta:
+            for investment in investments[key]:
+                assert investment['amount'] != 0
+                assert investment['profit'] == round(delta[key] * investment['amount'], 2)

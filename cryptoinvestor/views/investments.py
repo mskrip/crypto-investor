@@ -8,17 +8,9 @@ class InvestmentsListView(BaseView):
     def get_objects(self):
 
         context = {}
-        investments = self.app.user.account.investments
 
         base = self.app.local_currency
-
-        for key in investments:
-            asset = self.app.assets.get(key)
-            rate = asset.rates.get(base, []).get('rate', 'N/A')
-
-            for investment in investments[key]:
-                investment['profit'] = round(
-                    (rate * investment['amount']) - (investment['price'] * investment['amount']), 2)
+        investments = self.app.user.get_investments(base)
 
         context.update({
             'investments': investments,

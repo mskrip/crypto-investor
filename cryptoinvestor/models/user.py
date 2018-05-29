@@ -65,5 +65,20 @@ class User:
 
         return s
 
+    def get_investments(self, base: str) -> dict:
+        investments = self.account.investments
+        for key in investments:
+            asset = self.account.assets.get(key)
+            rate = asset.rates.get(base, []).get('rate', 'N/A')
+
+            for investment in investments[key]:
+                investment['profit'] = self.get_profit(investment, rate)
+
+        return investments
+
+    def get_profit(self, investment: dict, rate: float) -> float:
+        return round(
+                    (rate * investment['amount']) - (investment['price'] * investment['amount']), 2)
+
     def balance(self) -> float:
         return self.account.balance
