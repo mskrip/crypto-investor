@@ -17,6 +17,8 @@ class BaseView(View):
 
     def dispatch_request(self):
         context = self.get_objects()
+        context['balance'] = round(self.app.user.account.balance, 2)
+        context['currency'] = self.app.local_currency
 
         rd = context.get('redirect')
 

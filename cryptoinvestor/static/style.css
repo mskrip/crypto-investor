@@ -19,3 +19,7 @@ div.graph {
   top: auto !important;
   left: auto !important;
 }
+
+.balance {
+  font-size: 20px;
+}
