@@ -14,6 +14,7 @@ class AssetsListView(BaseView):
         return 'assets/assets.html'
 
     def get_objects(self):
+        self.app.update_assets()
         assets = []
         toasts = []
 
