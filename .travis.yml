@@ -47,6 +47,16 @@ jobs:
       after_script:
         - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" ${REGISTRY_URL}
         - docker push "${IMAGE_NAME}:${IMAGE_TAG}"
+        - 'curl -n -X PATCH \
+          -d "{
+            \"updates\": [{
+              \"type\": \"web\",
+              \"docker_image\": \"$(docker inspect \"${IMAGE_NAME}:${IMAGE_TAG}\" --format={{.Id}})\"
+            }]
+          }" \
+          -H "Content-Type: application/json" \
+          -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
+          https://api.heroku.com/apps/${HEROKU_APP}/formation'
       branches:
         only:
         - master
